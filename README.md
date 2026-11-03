@@ -26,7 +26,7 @@ The demo creates three **synthetic** PNGs: `outlined_cutout_demo.png`, `fog_glas
 | `design_scripts.core.outline` | Sticker borders, cream/pencil contours around masked subjects |
 | `design_scripts.core.glow` | Soft elliptical color backing / light halos |
 | `design_scripts.core.fog` | Frosted copy, negative lettering reveal masks, deterministic droplets |
-| `design_scripts.core.speckle` | Grainy / sprayed frost, irregular stippled reveal masks and photo-faithful composition |
+| `design_scripts.core.speckle` | Standalone full-frame furry glass (`full_frame_spray_frost`); optional, separate stippled reveal masks |
 | `design_scripts.core.player` | Translucent music-player UI, square photo crop, icons and progress track |
 | `design_scripts.core.doodles` | Stars, sparkles and earphone wires |
 
@@ -84,6 +84,27 @@ result.save("spray_frost.png")
 ```
 
 The foreground remains the original photo, not an AI redraw. For object-specific cutout boundaries, supply a separately segmented alpha mask.
+
+## Full-frame furry / speckled glass filter
+
+The **glass itself is a standalone effect**, without cutting out a subject, applying an outline, or placing any stickers. This reproduces the tutorial’s first step (the entire photo is covered in textured frost). Use another module **later** to layer a sharp subject on top if desired.
+
+```bash
+python -m examples.fullframe_frost --input my_photo.jpg --output frosted.png \
+  --blur 24 --mist .23 --grain .67 --seed 42
+```
+
+Or in Python:
+
+```python
+from PIL import Image
+from design_scripts.core.speckle import full_frame_spray_frost
+
+frosted = full_frame_spray_frost(Image.open("my_photo.jpg"), grain_strength=.67)
+frosted.save("frosted.png")
+```
+
+Only three parameters are needed to explore the material: `blur_radius` controls defocus, `mist_strength` controls milky translucency, and `grain_strength` controls the fuzzy sprayed microtexture. The filter preserves the entire image dimensions, never crops or isolates a foreground object, and is deterministic with a `seed`. For comparison, use `grain_strength=0` for simple smooth frosting. The original app’s “size 0 / strength 100” slider values do not translate directly to Pillow.
 
 ## Limits & design decisions
 

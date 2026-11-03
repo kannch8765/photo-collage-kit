@@ -108,3 +108,65 @@ def reveal_photo_in_spray_frost(
         grain_strength=grain_strength, seed=seed
     )
     return Image.composite(clear, fog, mask)
+
+
+def full_frame_spray_frost(
+    image: Image.Image,
+    *,
+    blur_radius: float = 24.0,
+    mist_strength: float = 0.23,
+    grain_strength: float = 0.53,
+    mist_color: tuple[int, int, int] = (235, 228, 219),
+    seed: int = 42,
+) -> Image.Image:
+    """Apply only a full-canvas furry/speckled frosted-glass filter.
+
+    No subjects are cut out, cleared, outlined, or rearranged. The input
+    image is unchanged and output dimensions are the same.
+
+    blur_radius controls soft defocus; mist_strength is milky haze opacity;
+    grain_strength controls fine condensation granules (all independent).
+    """
+    if blur_radius < 0 or not (0 <= mist_strength <= 1) or not (0 <= grain_strength <= 1):
+        raise ValueError("blur_radius must be nonnegative; strengths must be 0..1")
+    if len(mist_color) != 3 or any(not (0 <= v <= 255) for v in mist_color):
+        raise ValueError("mist_color must be an RGB color")
+
+    src = image.convert("RGB")
+    width, height = src.size
+    if width < 1 or height < 1:
+        raise ValueError("image must have positive dimensions")
+    rng = random.Random(seed)
+    blurred = src.filter(ImageFilter.GaussianBlur(blur_radius))
+
+    # Large translucent clouds make the frosted layer less flat.
+    cw, ch = max(2, width // 45), max(2, height // 45)
+    clouds = Image.frombytes("L", (cw, ch), rng.randbytes(cw * ch))
+    clouds = clouds.resize(src.size, Image.Resampling.BICUBIC)
+    clouds = clouds.filter(ImageFilter.GaussianBlur(1.7))
+    opacity = clouds.point(lambda v: max(0, min(255, round(
+        255 * mist_strength + (v - 128) * 0.45 * mist_strength
+    ))))
+    out = Image.composite(Image.new("RGB", src.size, mist_color), blurred, opacity)
+
+    if grain_strength > 0:
+        # Fine stipples and slightly larger grains with a deterministic seed.
+        dust = Image.frombytes("L", src.size, rng.randbytes(width * height))
+        dust = dust.filter(ImageFilter.GaussianBlur(0.28))
+        dust = dust.point(lambda v: max(0, min(255, round(
+            128 + (v - 128) * grain_strength * 0.28
+        ))))
+        mw, mh = max(2, width // 5), max(2, height // 5)
+        mid = Image.frombytes("L", (mw, mh), rng.randbytes(mw * mh))
+        mid = mid.resize(src.size, Image.Resampling.BILINEAR)
+        mid = mid.point(lambda v: max(0, min(255, round(
+            128 + (v - 128) * grain_strength * 0.12
+        ))))
+        channels = []
+        for channel in out.split():
+            channel = ImageChops.add(channel, dust, offset=-128)
+            channel = ImageChops.add(channel, mid, offset=-128)
+            channels.append(channel)
+        out = Image.merge("RGB", channels)
+
+    return out.convert("RGBA")
