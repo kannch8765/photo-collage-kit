@@ -26,6 +26,7 @@ The demo creates three **synthetic** PNGs: `outlined_cutout_demo.png`, `fog_glas
 | `design_scripts.core.outline` | Sticker borders, cream/pencil contours around masked subjects |
 | `design_scripts.core.glow` | Soft elliptical color backing / light halos |
 | `design_scripts.core.fog` | Frosted copy, negative lettering reveal masks, deterministic droplets |
+| `design_scripts.core.speckle` | Grainy / sprayed frost, irregular stippled reveal masks and photo-faithful composition |
 | `design_scripts.core.player` | Translucent music-player UI, square photo crop, icons and progress track |
 | `design_scripts.core.doodles` | Stars, sparkles and earphone wires |
 
@@ -64,6 +65,25 @@ photo = Image.open("my_photo.jpg")
 result = build_fog_glass(photo, ["Little", "Joys"])
 result.save("fog_glass.png")
 ```
+
+## Speckled / spray-frosted glass
+
+The sprayed, “hairy” frost variant adds fine condensation grain and a stochastic soft edge around a clear photograph. Unlike plain Gaussian blur, the edge has tiny particles instead of a perfectly smooth gradient. Use a focal ellipse over the food or subject; adjust `edge_width` and `grain_strength` to tune the amount of frosting.
+
+```python
+from PIL import Image
+from design_scripts.core.speckle import reveal_photo_in_spray_frost
+
+photo = Image.open("my_photo.jpg")
+w, h = photo.size
+result = reveal_photo_in_spray_frost(
+    photo, (round(w * .05), round(h * .1), round(w * .95), round(h * .95)),
+    edge_width=45, grain_strength=.6, seed=42,
+)
+result.save("spray_frost.png")
+```
+
+The foreground remains the original photo, not an AI redraw. For object-specific cutout boundaries, supply a separately segmented alpha mask.
 
 ## Limits & design decisions
 
