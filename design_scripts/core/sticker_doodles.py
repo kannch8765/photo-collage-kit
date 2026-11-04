@@ -1,8 +1,8 @@
 """Original, reusable pastel journal doodles on transparent RGBA layers.
 
 All art is generated from geometric strokes: no external stickers or photos.
-Use :func:\`render_doodle\` to export standalone PNGs, or
-:func:\`paste_doodle\` to layer a doodle over an existing Pillow photo.
+Use :func:`render_doodle` to export standalone PNGs, or
+:func:`paste_doodle` to layer a doodle over an existing Pillow photo.
 """
 from __future__ import annotations
 
