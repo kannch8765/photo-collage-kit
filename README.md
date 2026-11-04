@@ -29,8 +29,11 @@ The demo creates three **synthetic** PNGs: `outlined_cutout_demo.png`, `fog_glas
 | `design_scripts.core.speckle` | Standalone full-frame furry glass (`full_frame_spray_frost`); optional, separate stippled reveal masks |
 | `design_scripts.core.player` | Translucent music-player UI, square photo crop, icons and progress track |
 | `design_scripts.core.doodles` | Stars, sparkles and earphone wires |
+| `design_scripts.core.sticker_doodles` | Transparent pastel journal stickers: heart, sparkle, bow, sakura, paw, cat, torii |
 
 The `design_scripts.templates` package combines these into `outlined_cutout_template`, `fog_glass_template`, and `music_card_template`. Templates accept `PIL.Image` inputs and return `PIL.Image` outputs.
+
+[Journal sticker pack and demo](JOURNAL_STICKERS.md) — seven original, photo-free motifs; export transparent PNGs with `python -m examples.sticker_sheet`.
 
 ## One-minute example
 
